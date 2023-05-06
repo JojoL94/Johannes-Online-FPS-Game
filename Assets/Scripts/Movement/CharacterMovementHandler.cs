@@ -8,8 +8,7 @@ public class CharacterMovementHandler : NetworkBehaviour
     public bool isGrapple { get; set; }
     public Transform aimPoint;
     public LayerMask collisionLayers;
-    float lastTimeFired = 0;
-    
+    public Transform ropeStartPoint;
     [Header("Animation")]
     public Animator characterAnimator;
     bool isRespawnRequested = false;
@@ -23,17 +22,25 @@ public class CharacterMovementHandler : NetworkBehaviour
     float walkSpeed = 0;
     private Vector3 tmpGrappleDirection;
     private Vector3 grappleDirection;
+    float lastTimeFired = 0;
+    private LineRenderer ropeRenderer;
+    private float ropeWidth = 0.1f;
+    Vector3 grapplePoint;
     private void Awake()
     {
         networkCharacterControllerPrototypeCustom = GetComponent<NetworkCharacterControllerPrototypeCustom>();
         hpHandler = GetComponent<HPHandler>();
         networkInGameMessages = GetComponent<NetworkInGameMessages>();
         networkPlayer = GetComponent<NetworkPlayer>();
+
     }
 
     // Start is called before the first frame update
     void Start()
     {
+        ropeRenderer = GetComponent<LineRenderer>();
+        ropeRenderer.startWidth = ropeWidth;
+        ropeRenderer.endWidth = ropeWidth;
     }
 
     public override void FixedUpdateNetwork()
@@ -76,6 +83,8 @@ public class CharacterMovementHandler : NetworkBehaviour
             }
             if (isGrapple)
             {
+                ropeRenderer.SetPosition(0, ropeStartPoint.position);
+                ropeRenderer.SetPosition(1, grapplePoint);
                 networkCharacterControllerPrototypeCustom.GrapplePull(tmpGrappleDirection);
             }
             else
@@ -150,10 +159,10 @@ public class CharacterMovementHandler : NetworkBehaviour
         //Limit fire rate
         if (Time.time - lastTimeFired < 0.3f)
             return;
-        
-        float hitDistance = 10;
+        ropeRenderer.enabled = true;
+        float hitDistance = 30;
         bool isHitGrapple = false;
-        Vector3 grapplePoint;
+
 
         if (Runner.LagCompensation.Raycast(aimPoint.position, aimForwardVector, hitDistance, Object.InputAuthority, out var hitinfo, collisionLayers, HitOptions.IncludePhysX))
         {
@@ -175,7 +184,8 @@ public class CharacterMovementHandler : NetworkBehaviour
     
     IEnumerator StopGrapple()
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.7f);
+        ropeRenderer.enabled = false;
         isGrapple = false;
     }
 }

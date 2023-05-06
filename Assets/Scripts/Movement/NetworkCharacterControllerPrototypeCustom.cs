@@ -108,14 +108,14 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
     var moveVelocity = Velocity;
 
     direction = direction.normalized;
-
+/*
     if (IsGrounded && moveVelocity.y < 0) {
       moveVelocity.y = 0f;
     }
 
 
     moveVelocity.y += gravity * Runner.DeltaTime;
-
+*/
     var horizontalVel = default(Vector3);
     horizontalVel.x = moveVelocity.x;
     horizontalVel.z = moveVelocity.z;
