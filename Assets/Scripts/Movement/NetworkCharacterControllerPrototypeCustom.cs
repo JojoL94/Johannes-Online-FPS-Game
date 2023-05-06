@@ -19,6 +19,7 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
   public float viewUpDownRotationSpeed = 50.0f;
   public float dashSpeed = 20f;
   public float speedModifier = 0;
+  public float grappleAcceleration = 15f;
   float lastTimeDashed = 0;
   
   [Networked]
@@ -100,6 +101,46 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
     }
   }
 
+  //Grapple towards GrapplePoint
+  public virtual void GrapplePull(Vector3 direction) {
+    var deltaTime    = Runner.DeltaTime;
+    var previousPos  = transform.position;
+    var moveVelocity = Velocity;
+
+    direction = direction.normalized;
+
+    if (IsGrounded && moveVelocity.y < 0) {
+      moveVelocity.y = 0f;
+    }
+
+
+    moveVelocity.y += gravity * Runner.DeltaTime;
+
+    var horizontalVel = default(Vector3);
+    horizontalVel.x = moveVelocity.x;
+    horizontalVel.z = moveVelocity.z;
+
+    if (direction == default) {
+      horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
+    } else {
+      horizontalVel = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed + maxSpeed + speedModifier);
+    }
+
+    moveVelocity.x = horizontalVel.x;
+    moveVelocity.z = horizontalVel.z;
+
+    Controller.Move(moveVelocity * deltaTime);
+
+    Velocity   = (transform.position - previousPos) * Runner.Simulation.Config.TickRate;
+    if (Controller.isGrounded)
+    {
+      CanDoubleJump = true;
+    }
+    IsGrounded = Controller.isGrounded;
+  }
+  
+
+  //Dash
   public virtual void Dash()
   {
     //Limit fire rate
@@ -116,7 +157,6 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
     yield return new WaitForSeconds(0.5f);
     speedModifier = 0;
   }
-  
 
   /// <summary>
   /// Basic implementation of a character controller's movement function based on an intended direction.
@@ -133,6 +173,7 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
       moveVelocity.y = 0f;
     }
 
+
     moveVelocity.y += gravity * Runner.DeltaTime;
 
     var horizontalVel = default(Vector3);
@@ -142,7 +183,7 @@ public class NetworkCharacterControllerPrototypeCustom : NetworkTransform {
     if (direction == default) {
       horizontalVel = Vector3.Lerp(horizontalVel, default, braking * deltaTime);
     } else {
-      horizontalVel      = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed + speedModifier);
+      horizontalVel = Vector3.ClampMagnitude(horizontalVel + direction * acceleration * deltaTime, maxSpeed + speedModifier);
     }
 
     moveVelocity.x = horizontalVel.x;

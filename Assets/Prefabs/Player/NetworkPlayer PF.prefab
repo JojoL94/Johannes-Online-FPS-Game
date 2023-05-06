@@ -503,6 +503,7 @@ MonoBehaviour:
   viewUpDownRotationSpeed: 60
   dashSpeed: 15
   speedModifier: 0
+  grappleAcceleration: 15
   _IsGrounded: 0
   _CanDoubleJump: 0
   _Velocity: {x: 0, y: 0, z: 0}
@@ -519,6 +520,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
+  aimPoint: {fileID: 8609938973519135566}
+  collisionLayers:
+    serializedVersion: 2
+    m_Bits: 256
   characterAnimator: {fileID: 3653915264494236473}
 --- !u!114 &8954754819099828064
 MonoBehaviour:

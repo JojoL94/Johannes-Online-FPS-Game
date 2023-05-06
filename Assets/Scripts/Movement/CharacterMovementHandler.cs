@@ -5,6 +5,11 @@ using Fusion;
 
 public class CharacterMovementHandler : NetworkBehaviour
 {
+    public bool isGrapple { get; set; }
+    public Transform aimPoint;
+    public LayerMask collisionLayers;
+    float lastTimeFired = 0;
+    
     [Header("Animation")]
     public Animator characterAnimator;
     bool isRespawnRequested = false;
@@ -16,6 +21,8 @@ public class CharacterMovementHandler : NetworkBehaviour
     NetworkPlayer networkPlayer;
     
     float walkSpeed = 0;
+    private Vector3 tmpGrappleDirection;
+    private Vector3 grappleDirection;
     private void Awake()
     {
         networkCharacterControllerPrototypeCustom = GetComponent<NetworkCharacterControllerPrototypeCustom>();
@@ -55,12 +62,29 @@ public class CharacterMovementHandler : NetworkBehaviour
             rotation.eulerAngles = new Vector3(0, rotation.eulerAngles.y, rotation.eulerAngles.z);
             transform.rotation = rotation;
 
-            //Move
-            Vector3 moveDirection = transform.forward * networkInputData.movementInput.y + transform.right * networkInputData.movementInput.x;
-            moveDirection.Normalize();
-
-            networkCharacterControllerPrototypeCustom.Move(moveDirection);
-
+            
+            //Move and Grapple
+            if (networkInputData.isGrappleButtonPressed)
+            {
+                if (!isGrapple)
+                {
+                    FireGrappleGun(networkInputData.aimForwardVector);
+                    tmpGrappleDirection = grappleDirection;
+                    tmpGrappleDirection.Normalize();
+                    StartCoroutine(StopGrapple());
+                }
+            }
+            if (isGrapple)
+            {
+                networkCharacterControllerPrototypeCustom.GrapplePull(tmpGrappleDirection);
+            }
+            else
+            {
+                Vector3 moveDirection = transform.forward * networkInputData.movementInput.y + transform.right * networkInputData.movementInput.x;
+                moveDirection.Normalize();
+                networkCharacterControllerPrototypeCustom.Move(moveDirection);
+            }
+            
             //Dash
             if (networkInputData.isDashPressed )
             { 
@@ -121,5 +145,37 @@ public class CharacterMovementHandler : NetworkBehaviour
     }
     
 
+    void FireGrappleGun(Vector3 aimForwardVector)
+    {
+        //Limit fire rate
+        if (Time.time - lastTimeFired < 0.3f)
+            return;
+        
+        float hitDistance = 10;
+        bool isHitGrapple = false;
+        Vector3 grapplePoint;
 
+        if (Runner.LagCompensation.Raycast(aimPoint.position, aimForwardVector, hitDistance, Object.InputAuthority, out var hitinfo, collisionLayers, HitOptions.IncludePhysX))
+        {
+            grapplePoint = hitinfo.Point;
+            Debug.Log("Grapple Point at: " + grapplePoint);
+            grappleDirection = (grapplePoint - transform.position).normalized; 
+            isGrapple = true;
+            isHitGrapple = true;
+        }
+        if (hitinfo.Distance > 0)
+            hitDistance = hitinfo.Distance;
+        //Debug
+        if (isHitGrapple)
+            Debug.DrawRay(aimPoint.position, aimForwardVector * hitDistance, Color.red, 1);
+        else Debug.DrawRay(aimPoint.position, aimForwardVector * hitDistance, Color.green, 1);
+        
+        lastTimeFired = Time.time;
+    }
+    
+    IEnumerator StopGrapple()
+    {
+        yield return new WaitForSeconds(0.3f);
+        isGrapple = false;
+    }
 }
