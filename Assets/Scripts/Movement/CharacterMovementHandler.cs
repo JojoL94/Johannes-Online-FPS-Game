@@ -5,6 +5,8 @@ using Fusion;
 
 public class CharacterMovementHandler : NetworkBehaviour
 {
+    [Header("Animation")]
+    public Animator characterAnimator;
     bool isRespawnRequested = false;
 
     //Other components
@@ -12,7 +14,8 @@ public class CharacterMovementHandler : NetworkBehaviour
     HPHandler hpHandler;
     NetworkInGameMessages networkInGameMessages;
     NetworkPlayer networkPlayer;
-
+    
+    float walkSpeed = 0;
     private void Awake()
     {
         networkCharacterControllerPrototypeCustom = GetComponent<NetworkCharacterControllerPrototypeCustom>();
@@ -68,6 +71,14 @@ public class CharacterMovementHandler : NetworkBehaviour
             if(networkInputData.isJumpPressed)
                 networkCharacterControllerPrototypeCustom.Jump();
 
+            
+            //Animation walk
+            Vector2 walkVector = new Vector2(networkCharacterControllerPrototypeCustom.Velocity.x, networkCharacterControllerPrototypeCustom.Velocity.z);
+            walkVector.Normalize();
+
+            walkSpeed = Mathf.Lerp(walkSpeed, Mathf.Clamp01(walkVector.magnitude), Runner.DeltaTime * 5);
+
+            characterAnimator.SetFloat("walkSpeed", walkSpeed);
             //Check if we've fallen off the world.
             CheckFallRespawn();
         }

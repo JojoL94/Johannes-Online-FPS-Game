@@ -64,7 +64,7 @@ public class GrapplingHandler : NetworkBehaviour
         bool isHitGrapple = false;
         Vector3 grapplePoint;
 
-        if (Runner.LagCompensation.Raycast(aimPoint.position, aimForwardVector, hitDistance, Object.InputAuthority, out var hitinfo, collisionLayers, HitOptions.IgnoreInputAuthority))
+        if (Runner.LagCompensation.Raycast(aimPoint.position, aimForwardVector, hitDistance, Object.InputAuthority, out var hitinfo, collisionLayers, HitOptions.IncludePhysX))
         {
             grapplePoint = hitinfo.Point;
             Debug.Log("Grapple Point at: " + grapplePoint);

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PlayerAnimation : MonoBehaviour
 {
-    private Animator anim;
+    /*private Animator anim;
 
     void Start()
     {
@@ -47,5 +47,5 @@ public class PlayerAnimation : MonoBehaviour
         {
             anim.Play("Rifle Aiming Idle");
         }
-    }
+    }*/
 }

@@ -462,6 +462,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DoomMap
       objectReference: {fileID: 0}
+    - target: {fileID: 1840657852344646499, guid: ae66338f54169574fab968ba59195c95, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 2872412329306811208, guid: ae66338f54169574fab968ba59195c95, type: 3}
       propertyPath: m_Layer
       value: 8
